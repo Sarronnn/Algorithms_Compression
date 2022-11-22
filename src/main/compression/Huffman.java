@@ -228,4 +228,4 @@ public class Huffman {
     	return output.toByteArray();
     }
 
-}//
+}
