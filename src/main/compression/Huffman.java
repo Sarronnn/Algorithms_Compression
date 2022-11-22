@@ -34,7 +34,6 @@ public class Huffman {
     public Huffman (String corpus) {
     	Map<Character, Integer> characterandFrequency = new HashMap<>();
     	characterandFrequency.put(ETB_CHAR, 1);
-    	//this.trieRoot = addToQueue(characterandFrequency);
     	for (int i=0; i < corpus.length(); i++) {
     		if (characterandFrequency.containsKey(corpus.charAt(i))) {
     			characterandFrequency.put(corpus.charAt(i), characterandFrequency.get(corpus.charAt(i))+1);
@@ -172,10 +171,7 @@ public class Huffman {
     		}
     		compressedString += compressedByteString;
     		
-    	}
-    	System.out.println(compressedString);
-    	System.out.println(this.encodingMap);
-    	
+	}
     	for(int i = 0; i < compressedString.length(); i ++) {
     		if(current.isLeaf()) {
 				if(current.character == ETB_CHAR) {
