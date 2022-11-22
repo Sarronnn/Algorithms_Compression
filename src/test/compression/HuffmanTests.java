@@ -21,8 +21,8 @@ public class HuffmanTests {
     // [!] You might want to comment these lines out while
     // developing, just so you know whether or not you're
     // inefficient or bugged!
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(2);
+  //  @Rule
+  //  public Timeout globalTimeout = Timeout.seconds(2);
     
     // Grade record-keeping
     static int possible = 0, passed = 0;

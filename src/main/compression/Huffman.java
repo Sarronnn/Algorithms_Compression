@@ -1,6 +1,7 @@
 package main.compression;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.io.ByteArrayOutputStream; // Optional
 
 /**
@@ -31,15 +32,99 @@ public class Huffman {
      *        differ.
      */
     public Huffman (String corpus) {
-        // TODO!
-        throw new UnsupportedOperationException();
+    	Map<Character, Integer> characterandFrequency = new HashMap<>();
+    	characterandFrequency.put(ETB_CHAR, 1);
+    	//this.trieRoot = addToQueue(characterandFrequency);
+    	for (int i=0; i < corpus.length(); i++) {
+    		if (characterandFrequency.containsKey(corpus.charAt(i))) {
+    			characterandFrequency.put(corpus.charAt(i), characterandFrequency.get(corpus.charAt(i))+1);
+    		}
+    		else {
+    			characterandFrequency.put(corpus.charAt(i), 1); 
+    		}	
+    	}
+    	PriorityQueue<HuffNode> huffNodes = addToQueue(characterandFrequency);
+    	this.addToTrie(huffNodes);
+    	this.encodingMap = new TreeMap<>();
+    	this.addToEncodingMap(this.trieRoot, "");	
     }
     
+    /**
+     * Helper method to add to our encoding map
+     * @param node : the node we are checking and adding the character in that node
+     * to our encoding map. 
+     * @param bitString : a collection of our Character's bit strings (0's and 1's).
+     */
+    private void addToEncodingMap(HuffNode node, String bitString) {
+    	if(node.isLeaf()) {
+    		this.encodingMap.put(node.character, bitString);
+    		return;
+    	}
+    	else {
+    		addToEncodingMap(node.zeroChild, bitString + "0");
+    		addToEncodingMap(node.oneChild, bitString + "1");		 
+    	}
+    }
     
+    /**
+     * Helper method to add to our map to a priority queue.
+     * @param map : our map of Character to Integer.
+     * @return the priority queue we just made.
+     */
+    private static PriorityQueue<HuffNode> addToQueue(Map<Character, Integer> map) {
+    	PriorityQueue<HuffNode> queue = new PriorityQueue<HuffNode>();
+    	for (Map.Entry<Character, Integer> entry : map.entrySet()) {
+    		HuffNode prioritynode = new HuffNode(entry.getKey(), entry.getValue());
+    		queue.add(prioritynode);
+    	}
+    	return queue; 
+    }
+    
+    /**
+     * Helper method to add our queue to a trie.
+     * @param queue : the queue we want to add to the trie.
+     */
+    private void addToTrie(PriorityQueue<HuffNode> queue) {
+    	//This makes the trie.
+    	while(queue.size() > 1) {
+    		HuffNode poppedFirst = queue.poll(); 
+    		HuffNode poppedSecond = queue.poll();
+    		HuffNode parent = new HuffNode(poppedFirst.character, poppedFirst.count + poppedSecond.count);
+    		queue.add(parent);
+    		//This connects the parent node to its edges
+    		parent.zeroChild = poppedFirst;
+    		parent.oneChild = poppedSecond;	
+    	}
+    	this.trieRoot = queue.poll();	
+    }
+    
+    /**
+     * Helper method to change a string to a byte
+     * @param word : the string we want to represent in bytes
+     * @return an Array with bytes that represent word
+     */
+    private byte[] changeTobyte(String word) {
+    	ByteArrayOutputStream output = new ByteArrayOutputStream();
+    	while(word.length()%8 != 0) {
+    		word+= "0";
+    	}
+    	for(int i = 0; i < word.length(); i+= 8) {
+    		String bits = word.substring(i, i + 8); 
+    		int parse = Integer.parseInt(bits, 2); 
+    		output.write((byte) parse);
+    	}
+    	return output.toByteArray();
+    }
+    /**
+     * Helper method to convert the Huffman trie into the bit
+     * strings header.
+     * @param n : the huff node we want to build the header bit off of.
+     * return a string that is the header bit. 
+     */
+   
     // -----------------------------------------------
     // Compression
     // -----------------------------------------------
-    
     /**
      * Compresses the given String message / text corpus into its Huffman coded
      * bitstring, as represented by an array of bytes. Uses the encodingMap
@@ -52,8 +137,12 @@ public class Huffman {
      *         0-padding on the final byte.
      */
     public byte[] compress (String message) {
-        // TODO!
-        throw new UnsupportedOperationException();
+    	String bitString = "";
+        for(int i = 0; i < message.length(); i++) {
+        	bitString += this.encodingMap.get(message.charAt(i));
+        }
+        bitString += this.encodingMap.get(ETB_CHAR);
+        return changeTobyte(bitString);  
     }
     
     
@@ -73,8 +162,42 @@ public class Huffman {
      * @return Decompressed String representation of the compressed bytecode message.
      */
     public String decompress (byte[] compressedMsg) {
-        // TODO!
-        throw new UnsupportedOperationException();
+    	String decodedCharacters = "";
+    	HuffNode current = this.trieRoot;
+    	String compressedString = "";
+    	for(int j = 0; j< compressedMsg.length; j++) {
+    		String compressedByteString = Integer.toBinaryString(compressedMsg[j] & 0xff);
+    		while(compressedByteString.length() %8 != 0) {
+    			compressedByteString = "0" + compressedByteString;
+    		}
+    		compressedString += compressedByteString;
+    		
+    	}
+    	System.out.println(compressedString);
+    	System.out.println(this.encodingMap);
+    	
+    	for(int i = 0; i < compressedString.length(); i ++) {
+    		if(current.isLeaf()) {
+				if(current.character == ETB_CHAR) {
+					return decodedCharacters;
+				}
+				else {
+					decodedCharacters += current.character;
+					current = this.trieRoot;
+					i --;
+				}
+    		}
+    		else {
+    			if(compressedString.charAt(i) == '0') {
+    				current = current.zeroChild;
+    				
+    			}
+    			else {
+    				current = current.oneChild;
+    			}
+    		}
+    	}
+        return decodedCharacters;
     }
     
     
@@ -105,8 +228,11 @@ public class Huffman {
         }
         
         public int compareTo (HuffNode other) {
-            // TODO: Implemented incorrectly at the moment!
-            return 0;
+            
+        	if(this.count == other.count) {
+        		return this.character - other.character;
+        	}
+        	return this.count - other.count;
         }
         
     }
