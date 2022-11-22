@@ -114,13 +114,7 @@ public class Huffman {
     	}
     	return output.toByteArray();
     }
-    /**
-     * Helper method to convert the Huffman trie into the bit
-     * strings header.
-     * @param n : the huff node we want to build the header bit off of.
-     * return a string that is the header bit. 
-     */
-   
+    
     // -----------------------------------------------
     // Compression
     // -----------------------------------------------
