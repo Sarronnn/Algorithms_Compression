@@ -48,6 +48,122 @@ public class Huffman {
     	this.addToEncodingMap(this.trieRoot, "");	
     }
     
+    
+    
+    // -----------------------------------------------
+    // Compression
+    // -----------------------------------------------
+    /**
+     * Compresses the given String message / text corpus into its Huffman coded
+     * bitstring, as represented by an array of bytes. Uses the encodingMap
+     * field generated during construction for this purpose.
+     * 
+     * @param message String representing the corpus to compress.
+     * @return {@code byte[]} representing the compressed corpus with the
+     *         Huffman coded bytecode. Formatted as:
+     *         (1) the bitstring containing the message itself, (2) possible
+     *         0-padding on the final byte.
+     */
+    public byte[] compress (String message) {
+    	String bitString = "";
+        for(int i = 0; i < message.length(); i++) {
+        	bitString += this.encodingMap.get(message.charAt(i));
+        }
+        bitString += this.encodingMap.get(ETB_CHAR);
+        return changeTobyte(bitString);  
+    }
+    
+    
+    // -----------------------------------------------
+    // Decompression
+    // -----------------------------------------------
+    
+    /**
+     * Decompresses the given compressed array of bytes into their original,
+     * String representation. Uses the trieRoot field (the Huffman Trie) that
+     * generated the compressed message during decoding.
+     * 
+     * @param compressedMsg {@code byte[]} representing the compressed corpus with the
+     *        Huffman coded bytecode. Formatted as:
+     *        (1) the bitstring containing the message itself, (2) possible
+     *        0-padding on the final byte.
+     * @return Decompressed String representation of the compressed bytecode message.
+     */
+    public String decompress (byte[] compressedMsg) {
+    	String decodedCharacters = "";
+    	HuffNode current = this.trieRoot;
+    	String compressedString = "";
+    	for(int j = 0; j< compressedMsg.length; j++) {
+    		String compressedByteString = Integer.toBinaryString(compressedMsg[j] & 0xff);
+    		while(compressedByteString.length() %8 != 0) {
+    			compressedByteString = "0" + compressedByteString;
+    		}
+    		compressedString += compressedByteString;	
+    	}
+    	for(int i = 0; i < compressedString.length(); i ++) {
+    		if(current.isLeaf()) {
+				if(current.character == ETB_CHAR) {
+					return decodedCharacters;
+				}
+				else {
+					decodedCharacters += current.character;
+					current = this.trieRoot;
+					i --;
+				}
+    		}
+    		else {
+    			if(compressedString.charAt(i) == '0') {
+    				current = current.zeroChild;
+    				
+    			}
+    			else {
+    				current = current.oneChild;
+    			}
+    		}
+    	}
+        return decodedCharacters;
+    }
+    
+    
+    // -----------------------------------------------
+    // Huffman Trie
+    // -----------------------------------------------
+    
+    /**
+     * Huffman Trie Node class used in construction of the Huffman Trie.
+     * Each node is a binary (having at most a left (0) and right (1) child), contains
+     * a character field that it represents, and a count field that holds the 
+     * number of times the node's character (or those in its subtrees) appear 
+     * in the corpus.
+     */
+    private static class HuffNode implements Comparable<HuffNode> {
+        
+        HuffNode zeroChild, oneChild;
+        char character;
+        int count;
+        
+        HuffNode (char character, int count) {
+            this.count = count;
+            this.character = character;
+        }
+        
+        public boolean isLeaf () {
+            return this.zeroChild == null && this.oneChild == null;
+        }
+        
+        public int compareTo (HuffNode other) {
+            
+        	if(this.count == other.count) {
+        		return this.character - other.character;
+        	}
+        	return this.count - other.count;
+        }
+        
+    }
+    // -----------------------------------------------
+    // All helped methods used are below.
+    // -----------------------------------------------
+    
     /**
      * Helper method to add to our encoding map
      * @param node : the node we are checking and adding the character in that node
@@ -113,118 +229,6 @@ public class Huffman {
     		output.write((byte) parse);
     	}
     	return output.toByteArray();
-    }
-    
-    // -----------------------------------------------
-    // Compression
-    // -----------------------------------------------
-    /**
-     * Compresses the given String message / text corpus into its Huffman coded
-     * bitstring, as represented by an array of bytes. Uses the encodingMap
-     * field generated during construction for this purpose.
-     * 
-     * @param message String representing the corpus to compress.
-     * @return {@code byte[]} representing the compressed corpus with the
-     *         Huffman coded bytecode. Formatted as:
-     *         (1) the bitstring containing the message itself, (2) possible
-     *         0-padding on the final byte.
-     */
-    public byte[] compress (String message) {
-    	String bitString = "";
-        for(int i = 0; i < message.length(); i++) {
-        	bitString += this.encodingMap.get(message.charAt(i));
-        }
-        bitString += this.encodingMap.get(ETB_CHAR);
-        return changeTobyte(bitString);  
-    }
-    
-    
-    // -----------------------------------------------
-    // Decompression
-    // -----------------------------------------------
-    
-    /**
-     * Decompresses the given compressed array of bytes into their original,
-     * String representation. Uses the trieRoot field (the Huffman Trie) that
-     * generated the compressed message during decoding.
-     * 
-     * @param compressedMsg {@code byte[]} representing the compressed corpus with the
-     *        Huffman coded bytecode. Formatted as:
-     *        (1) the bitstring containing the message itself, (2) possible
-     *        0-padding on the final byte.
-     * @return Decompressed String representation of the compressed bytecode message.
-     */
-    public String decompress (byte[] compressedMsg) {
-    	String decodedCharacters = "";
-    	HuffNode current = this.trieRoot;
-    	String compressedString = "";
-    	for(int j = 0; j< compressedMsg.length; j++) {
-    		String compressedByteString = Integer.toBinaryString(compressedMsg[j] & 0xff);
-    		while(compressedByteString.length() %8 != 0) {
-    			compressedByteString = "0" + compressedByteString;
-    		}
-    		compressedString += compressedByteString;
-    		
-	}
-    	for(int i = 0; i < compressedString.length(); i ++) {
-    		if(current.isLeaf()) {
-				if(current.character == ETB_CHAR) {
-					return decodedCharacters;
-				}
-				else {
-					decodedCharacters += current.character;
-					current = this.trieRoot;
-					i --;
-				}
-    		}
-    		else {
-    			if(compressedString.charAt(i) == '0') {
-    				current = current.zeroChild;
-    				
-    			}
-    			else {
-    				current = current.oneChild;
-    			}
-    		}
-    	}
-        return decodedCharacters;
-    }
-    
-    
-    // -----------------------------------------------
-    // Huffman Trie
-    // -----------------------------------------------
-    
-    /**
-     * Huffman Trie Node class used in construction of the Huffman Trie.
-     * Each node is a binary (having at most a left (0) and right (1) child), contains
-     * a character field that it represents, and a count field that holds the 
-     * number of times the node's character (or those in its subtrees) appear 
-     * in the corpus.
-     */
-    private static class HuffNode implements Comparable<HuffNode> {
-        
-        HuffNode zeroChild, oneChild;
-        char character;
-        int count;
-        
-        HuffNode (char character, int count) {
-            this.count = count;
-            this.character = character;
-        }
-        
-        public boolean isLeaf () {
-            return this.zeroChild == null && this.oneChild == null;
-        }
-        
-        public int compareTo (HuffNode other) {
-            
-        	if(this.count == other.count) {
-        		return this.character - other.character;
-        	}
-        	return this.count - other.count;
-        }
-        
     }
 
 }
