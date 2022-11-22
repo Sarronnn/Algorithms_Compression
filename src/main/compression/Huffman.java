@@ -48,8 +48,6 @@ public class Huffman {
     	this.addToEncodingMap(this.trieRoot, "");	
     }
     
-    
-    
     // -----------------------------------------------
     // Compression
     // -----------------------------------------------
@@ -72,7 +70,6 @@ public class Huffman {
         bitString += this.encodingMap.get(ETB_CHAR);
         return changeTobyte(bitString);  
     }
-    
     
     // -----------------------------------------------
     // Decompression
@@ -231,4 +228,4 @@ public class Huffman {
     	return output.toByteArray();
     }
 
-}
+}//
