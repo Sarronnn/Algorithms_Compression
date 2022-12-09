@@ -99,6 +99,7 @@ public class Huffman {
     	}
     	for(int i = 0; i < compressedString.length(); i ++) {
     		if(current.isLeaf()) {
+		// >> [KT] Some spacing inconsistencies here (-0.5)
 				if(current.character == ETB_CHAR) {
 					return decodedCharacters;
 				}
@@ -215,6 +216,7 @@ public class Huffman {
      * @param word : the string we want to represent in bytes
      * @return an Array with bytes that represent word
      */
+    // >> [KT] Great use of helper methods 
     private byte[] changeTobyte(String word) {
     	ByteArrayOutputStream output = new ByteArrayOutputStream();
     	while(word.length()%8 != 0) {
@@ -229,3 +231,25 @@ public class Huffman {
     }
 
 }
+
+// ===================================================
+// >>> [KT] Summary
+// This is a very solid submission both from a style 
+// and a logic perspective. Great use of helper methods, 
+// good variable and method names, and overall an 
+// implementation that shows off your understanding of 
+// compression algorithms. Nicely done! 
+// ---------------------------------------------------
+// >>> [KT] Style Checklist
+// [X] = Good, [~] = Mixed bag, [ ] = Needs improvement
+//
+// [X] Variables and helper methods named and used well
+// [X] Proper and consistent indentation and spacing
+// [X] Proper JavaDocs provided for ALL methods
+// [X] Logic is adequately simplified
+// [X] Code repetition is kept to a minimum
+// ---------------------------------------------------
+// Correctness:          98.5 / 100 (-1.5 / missed unit test)
+// Style Penalty:       -0.5
+// Total:                98 / 100
+// ===================================================
